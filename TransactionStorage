@@ -1,0 +1,57 @@
+package com.mycompany.mainpanel;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TransactionStorage {
+    private static final String FILE_NAME = "transactions.dat";
+
+    public static class Transaction implements Serializable {
+        private static final long serialVersionUID = 1L; // For serialization
+        String dateTime;
+        String accountNumber;
+        String type;
+        double amount;
+
+        public Transaction(String dateTime, String accountNumber, String type, double amount) {
+            this.dateTime = dateTime; // Stored exactly as passed in
+            this.accountNumber = accountNumber;
+            this.type = type;
+            this.amount = amount;
+        }
+    }
+
+    private static List<Transaction> transactions = loadTransactions();
+
+    public static void addTransaction(String dateTime, String accountNumber, String type, double amount) {
+        transactions.add(new Transaction(dateTime, accountNumber, type, amount));
+        saveTransactions();
+    }
+
+    public static List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public static void saveTransactions() {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            out.writeObject(transactions);
+        } catch (IOException e) {
+            System.err.println("Error saving transactions: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Transaction> loadTransactions() {
+        File file = new File(FILE_NAME);
+        if (!file.exists()) {
+            return new ArrayList<>();
+        }
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+            return (List<Transaction>) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error loading transactions: " + e.getMessage());
+            return new ArrayList<>();
+        }
+}
+    }
